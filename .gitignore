@@ -1,0 +1,12 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+
+# Large model file (too big for GitHub)
+backend/hit_predictor.pkl
+backend/rec_data.csv
+
+# System files
+.DS_Store
+Thumbs.db

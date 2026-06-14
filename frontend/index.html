@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MusicIQ — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="landing-page">
+
+  <nav class="navbar">
+    <div class="logo">🎵 MusicIQ</div>
+    <button class="btn-signin" id="googleBtn">Sign in with Google</button>
+  </nav>
+
+  <div class="hero">
+    <h1>Discover What Makes a Song<br><span class="gradient-text">A Hit</span></h1>
+    <p>Powered by machine learning trained on 114,000 Spotify tracks. Predict hits, find similar songs, and explore music patterns.</p>
+    <button class="btn-primary" id="heroBtn" style="font-size:1rem; padding:14px 36px;">
+      🚀 Get Started — Sign in with Google
+    </button>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🎯</span>
+        <h3>Hit Predictor</h3>
+        <p>Enter audio features and find out if your song could be a chart-topper</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🎧</span>
+        <h3>Song Recommender</h3>
+        <p>Get personalized recommendations based on audio similarity</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Genre Explorer</h3>
+        <p>Discover how different genres compare across audio features</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <h3>Music Chatbot</h3>
+        <p>Ask anything about songs, artists, and music trends</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp }      from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth,
+             GoogleAuthProvider,
+             signInWithPopup,
+             onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBmDQofQE0RU2uiwh-5TGUyPRt7nyqjiJE",
+      authDomain:        "musiciq-5b0fd.firebaseapp.com",
+      projectId:         "musiciq-5b0fd",
+      storageBucket:     "musiciq-5b0fd.firebasestorage.app",
+      messagingSenderId: "581484796289",
+      appId:             "1:581484796289:web:720c2edd0ce10c27247080"
+    };
+
+    const app      = initializeApp(firebaseConfig);
+    const auth     = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    // Already logged in → skip to dashboard
+    onAuthStateChanged(auth, (user) => {
+      if (user) window.location.href = "dashboard.html";
+    });
+
+    async function signIn() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        localStorage.setItem("musiciq_user", JSON.stringify({
+          name:  result.user.displayName,
+          email: result.user.email,
+          photo: result.user.photoURL,
+          uid:   result.user.uid
+        }));
+        window.location.href = "dashboard.html";
+      } catch (err) {
+        alert("Login failed: " + err.message);
+      }
+    }
+
+    document.getElementById("googleBtn").addEventListener("click", signIn);
+    document.getElementById("heroBtn").addEventListener("click", signIn);
+  </script>
+</body>
+</html>

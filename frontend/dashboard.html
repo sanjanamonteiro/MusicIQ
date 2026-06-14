@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MusicIQ — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="dashboard-page">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="logo">🎵 MusicIQ</div>
+
+    <div class="user-info">
+      <img id="userPhoto" class="user-avatar" src="" alt="avatar">
+      <div>
+        <div id="userName" style="font-weight:600; font-size:0.9rem;"></div>
+        <div id="userEmail" style="font-size:0.75rem; color:var(--text2);"></div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item active" onclick="showTab('predictor')">🎯 Hit Predictor</a>
+      <a class="nav-item"       onclick="showTab('recommender')">🎧 Recommender</a>
+      <a class="nav-item"       onclick="showTab('search')">🔍 Search Songs</a>
+      <a class="nav-item"       onclick="showTab('history')">🕘 History</a>
+      <a class="nav-item"       onclick="showTab('chatbot')">🤖 Chatbot</a>
+    </nav>
+
+    <button class="btn-signout" id="logoutBtn">Sign Out</button>
+  </aside>
+
+  <!-- ── Main Content ── -->
+  <main class="main-content">
+
+    <!-- Hit Predictor Tab -->
+    <div id="tab-predictor" class="tab">
+      <h2>🎯 Hit Predictor</h2>
+      <p class="tab-desc">Enter a song's audio features and find out if it could be a hit!</p>
+      <div class="card">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Danceability <span class="hint">0 – 1</span></label>
+            <input type="number" id="danceability" min="0" max="1" step="0.01" value="0.7">
+          </div>
+          <div class="form-group">
+            <label>Energy <span class="hint">0 – 1</span></label>
+            <input type="number" id="energy" min="0" max="1" step="0.01" value="0.8">
+          </div>
+          <div class="form-group">
+            <label>Loudness <span class="hint">dB, e.g. -5</span></label>
+            <input type="number" id="loudness" min="-60" max="0" step="0.1" value="-5">
+          </div>
+          <div class="form-group">
+            <label>Speechiness <span class="hint">0 – 1</span></label>
+            <input type="number" id="speechiness" min="0" max="1" step="0.01" value="0.05">
+          </div>
+          <div class="form-group">
+            <label>Acousticness <span class="hint">0 – 1</span></label>
+            <input type="number" id="acousticness" min="0" max="1" step="0.01" value="0.1">
+          </div>
+          <div class="form-group">
+            <label>Instrumentalness <span class="hint">0 – 1</span></label>
+            <input type="number" id="instrumentalness" min="0" max="1" step="0.01" value="0.0">
+          </div>
+          <div class="form-group">
+            <label>Liveness <span class="hint">0 – 1</span></label>
+            <input type="number" id="liveness" min="0" max="1" step="0.01" value="0.1">
+          </div>
+          <div class="form-group">
+            <label>Valence <span class="hint">0 – 1</span></label>
+            <input type="number" id="valence" min="0" max="1" step="0.01" value="0.6">
+          </div>
+          <div class="form-group">
+            <label>Tempo <span class="hint">BPM</span></label>
+            <input type="number" id="tempo" min="50" max="250" value="120">
+          </div>
+          <div class="form-group">
+            <label>Duration <span class="hint">milliseconds</span></label>
+            <input type="number" id="duration_ms" value="200000">
+          </div>
+          <div class="form-group">
+            <label>Genre</label>
+            <select id="genre_encoded" style="width:100%;background:var(--bg3);border:1px solid var(--border);
+                    color:var(--text);padding:10px 12px;border-radius:8px;font-size:0.9rem;outline:none;">
+              <option value="0">Loading...</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn-primary" id="predictBtn" onclick="predictHit()">🎯 Predict Hit</button>
+        <div id="predictResult" class="result-box hidden"></div>
+      </div>
+    </div>
+
+    <!-- Recommender Tab -->
+    <div id="tab-recommender" class="tab hidden">
+      <h2>🎧 Song Recommender</h2>
+      <p class="tab-desc">Type a song name and get similar songs based on audio fingerprint.</p>
+      <div class="card">
+        <div class="search-row">
+          <input type="text" id="recInput" class="search-input"
+                 placeholder="e.g. Shape of You" oninput="liveSearch()">
+          <input type="number" id="recCount" value="5" min="1" max="20"
+                 style="width:70px;background:var(--bg3);border:1px solid var(--border);
+                        color:var(--text);padding:10px;border-radius:8px;text-align:center;outline:none;">
+          <button class="btn-primary" onclick="getSongs()">🎧 Recommend</button>
+        </div>
+        <div id="suggestions" class="suggestions-list hidden"></div>
+        <div id="recResult"></div>
+      </div>
+    </div>
+
+    <!-- Search Tab -->
+    <div id="tab-search" class="tab hidden">
+      <h2>🔍 Search Songs</h2>
+      <p class="tab-desc">Browse all 114,000 songs in the dataset.</p>
+      <div class="card">
+        <div class="search-row">
+          <input type="text" id="searchInput" class="search-input" placeholder="Search by song name...">
+          <button class="btn-primary" onclick="searchSongs()">Search</button>
+        </div>
+        <div id="searchResult"></div>
+      </div>
+    </div>
+
+    <!-- History Tab -->
+    <div id="tab-history" class="tab hidden">
+      <h2>🕘 Your History</h2>
+      <p class="tab-desc">Your recent predictions and recommendations.</p>
+      <div id="historyList" class="history-list"></div>
+    </div>
+
+    <!-- Chatbot Tab -->
+    <div id="tab-chatbot" class="tab hidden">
+      <h2>🤖 Music Chatbot</h2>
+      <p class="tab-desc">Ask anything about music, songs, or audio features.</p>
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-bubble bot">
+            👋 Hi! I'm your MusicIQ assistant. Ask me anything about music — like "What makes a song danceable?" or "Tell me about jazz music"!
+          </div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" class="search-input"
+                 placeholder="Ask about music..." onkeydown="if(event.key==='Enter') sendChat()">
+          <button class="btn-primary" onclick="sendChat()">Send</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+    import { getAuth,
+             onAuthStateChanged,
+             signOut }        from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey:            "AIzaSyBmDQofQE0RU2uiwh-5TGUyPRt7nyqjiJE",
+      authDomain:        "musiciq-5b0fd.firebaseapp.com",
+      projectId:         "musiciq-5b0fd",
+      storageBucket:     "musiciq-5b0fd.firebasestorage.app",
+      messagingSenderId: "581484796289",
+      appId:             "1:581484796289:web:720c2edd0ce10c27247080"
+    };
+
+    const app  = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        document.getElementById("userName").textContent  = user.displayName;
+        document.getElementById("userEmail").textContent = user.email;
+        document.getElementById("userPhoto").src         = user.photoURL;
+      }
+    });
+
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      signOut(auth).then(() => {
+        localStorage.clear();
+        window.location.href = "index.html";
+      });
+    });
+  </script>
+
+  <!-- App Logic -->
+  <script>
+    const API = "http://127.0.0.1:8000";
+    let history = JSON.parse(localStorage.getItem("musiciq_history") || "[]");
+
+    // ── Tab Switching ────────────────────────────────────────────
+    function showTab(name) {
+      document.querySelectorAll(".tab").forEach(t => t.classList.add("hidden"));
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      document.getElementById("tab-" + name).classList.remove("hidden");
+      event.target.classList.add("active");
+      if (name === "history") renderHistory();
+    }
+
+    // ── Load Genres ──────────────────────────────────────────────
+    async function loadGenres() {
+      try {
+        const res  = await fetch(`${API}/genres`);
+        const data = await res.json();
+        document.getElementById("genre_encoded").innerHTML =
+          data.genres.map((g, i) => `<option value="${i}">${g}</option>`).join("");
+      } catch {
+        document.getElementById("genre_encoded").innerHTML =
+          `<option value="0">⚠️ Start backend first</option>`;
+      }
+    }
+    loadGenres();
+
+    // ── Hit Predictor ────────────────────────────────────────────
+    async function predictHit() {
+      const btn = document.getElementById("predictBtn");
+      btn.textContent = "Predicting...";
+      btn.disabled = true;
+
+      const body = {
+        danceability:     parseFloat(document.getElementById("danceability").value),
+        energy:           parseFloat(document.getElementById("energy").value),
+        loudness:         parseFloat(document.getElementById("loudness").value),
+        speechiness:      parseFloat(document.getElementById("speechiness").value),
+        acousticness:     parseFloat(document.getElementById("acousticness").value),
+        instrumentalness: parseFloat(document.getElementById("instrumentalness").value),
+        liveness:         parseFloat(document.getElementById("liveness").value),
+        valence:          parseFloat(document.getElementById("valence").value),
+        tempo:            parseFloat(document.getElementById("tempo").value),
+        duration_ms:      parseFloat(document.getElementById("duration_ms").value),
+        genre_encoded:    parseInt(document.getElementById("genre_encoded").value),
+      };
+
+      try {
+        const res  = await fetch(`${API}/predict`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        const isHit = data.prediction === "Hit";
+        const box   = document.getElementById("predictResult");
+
+        box.className = `result-box ${isHit ? "result-hit" : "result-miss"}`;
+        box.innerHTML = `
+          <div class="result-icon">${isHit ? "🎯" : "❌"}</div>
+          <div class="result-label">${data.prediction}</div>
+          <div class="result-confidence">Confidence: <strong>${data.confidence}%</strong></div>
+          <div class="result-prob">Hit Probability: <strong>${data.hit_probability}%</strong></div>
+        `;
+
+        // Save to history
+        saveHistory("Prediction", `${data.prediction} (${data.confidence}% confidence)`);
+      } catch {
+        document.getElementById("predictResult").className = "result-box result-miss";
+        document.getElementById("predictResult").innerHTML =
+          `<div class="result-icon">⚠️</div><div class="result-label">Backend not running</div>
+           <div class="result-confidence">Run: uvicorn main:app --reload</div>`;
+      }
+
+      btn.textContent = "🎯 Predict Hit";
+      btn.disabled = false;
+    }
+
+    // ── Live Search Suggestions ──────────────────────────────────
+    async function liveSearch() {
+      const query = document.getElementById("recInput").value.trim();
+      const box   = document.getElementById("suggestions");
+      if (query.length < 2) { box.classList.add("hidden"); return; }
+
+      try {
+        const res  = await fetch(`${API}/search?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+        if (!data.results.length) { box.classList.add("hidden"); return; }
+
+        box.classList.remove("hidden");
+        box.innerHTML = data.results.slice(0, 5).map(s => `
+          <div class="suggestion-item" onclick="selectSong('${s.track_name.replace(/'/g,"\\'")}')">
+            <span class="sug-name">${s.track_name}</span>
+            <span class="sug-artist">${s.artists}</span>
+            <span class="sug-genre">${s.track_genre}</span>
+            <span class="sug-pop">⭐ ${s.popularity}</span>
+          </div>
+        `).join("");
+      } catch { box.classList.add("hidden"); }
+    }
+
+    function selectSong(name) {
+      document.getElementById("recInput").value = name;
+      document.getElementById("suggestions").classList.add("hidden");
+      getSongs();
+    }
+
+    // ── Recommender ──────────────────────────────────────────────
+    async function getSongs() {
+      const song = document.getElementById("recInput").value.trim();
+      const n    = parseInt(document.getElementById("recCount").value);
+      if (!song) return alert("Please enter a song name");
+
+      document.getElementById("recResult").innerHTML =
+        `<p style="color:var(--text2); padding:16px">🔍 Finding similar songs...</p>`;
+
+      try {
+        const res  = await fetch(`${API}/recommend`, {
+          method: "POST", headers: {"Content-Type":"application/json"},
+          body: JSON.stringify({ song_name: song, n })
+        });
+        const data = await res.json();
+
+        if (data.error) {
+          document.getElementById("recResult").innerHTML =
+            `<p style="color:var(--accent2); padding:16px">❌ ${data.error}</p>`;
+          return;
+        }
+
+        document.getElementById("recResult").innerHTML = `
+          <p class="rec-header">Because you liked <strong>${data.input_song}</strong> by ${data.artist}
+             · <span style="color:var(--accent)">${data.genre}</span>
+             · ⭐ ${data.popularity}</p>
+          <div class="rec-grid">
+            ${data.recommendations.map((s, i) => `
+              <div class="rec-card">
+                <div class="rec-rank">${i + 1}</div>
+                <div style="flex:1">
+                  <div class="rec-title">${s.track_name}</div>
+                  <div class="rec-artist">${s.artists}</div>
+                  <div class="rec-meta">
+                    <span class="badge">${s.track_genre}</span>
+                    <span>⭐ ${s.popularity}</span>
+                    <span>Match: ${(s.similarity * 100).toFixed(1)}%</span>
+                  </div>
+                </div>
+              </div>
+            `).join("")}
+          </div>
+        `;
+
+        saveHistory("Recommendation", `Songs similar to "${data.input_song}"`);
+      } catch {
+        document.getElementById("recResult").innerHTML =
+          `<p style="color:var(--accent2); padding:16px">⚠️ Backend not running. Run uvicorn first.</p>`;
+      }
+    }
+
+    // ── Search ───────────────────────────────────────────────────
+    async function searchSongs() {
+      const query = document.getElementById("searchInput").value.trim();
+      if (!query) return alert("Enter a search term");
+
+      document.getElementById("searchResult").innerHTML =
+        `<p style="color:var(--text2); padding:16px">🔍 Searching...</p>`;
+
+      try {
+        const res  = await fetch(`${API}/search?query=${encodeURIComponent(query)}`);
+        const data = await res.json();
+
+        document.getElementById("searchResult").innerHTML = `
+          <div class="rec-grid" style="margin-top:16px">
+            ${data.results.map(s => `
+              <div class="rec-card" style="cursor:pointer"
+                   onclick="document.getElementById('recInput').value='${s.track_name.replace(/'/g,"\\'")}';
+                            showTab('recommender'); getSongs();">
+                <div style="flex:1">
+                  <div class="rec-title">${s.track_name}</div>
+                  <div class="rec-artist">${s.artists}</div>
+                  <div class="rec-meta">
+                    <span class="badge">${s.track_genre}</span>
+                    <span>⭐ ${s.popularity}</span>
+                  </div>
+                </div>
+                <span style="color:var(--text2); font-size:0.8rem">Click to recommend →</span>
+              </div>
+            `).join("")}
+          </div>
+          <p style="color:var(--text2); font-size:0.8rem; margin-top:12px; padding:0 4px">
+            💡 Click any song to get recommendations for it
+          </p>
+        `;
+      } catch {
+        document.getElementById("searchResult").innerHTML =
+          `<p style="color:var(--accent2); padding:16px">⚠️ Backend not running.</p>`;
+      }
+    }
+
+    // ── History ──────────────────────────────────────────────────
+    function saveHistory(type, detail) {
+      history.unshift({ type, detail, time: new Date().toLocaleTimeString() });
+      if (history.length > 20) history.pop();
+      localStorage.setItem("musiciq_history", JSON.stringify(history));
+    }
+
+    function renderHistory() {
+      const el = document.getElementById("historyList");
+      if (!history.length) {
+        el.innerHTML = `<p class="empty-state">No history yet — try the Hit Predictor or Recommender!</p>`;
+        return;
+      }
+      el.innerHTML = history.map(h => `
+        <div class="history-item">
+          <span class="history-type">${h.type}</span>
+          <span class="history-detail">${h.detail}</span>
+          <span style="color:var(--text2); font-size:0.8rem; margin-left:auto">${h.time}</span>
+        </div>
+      `).join("");
+    }
+
+    // ── Chatbot ──────────────────────────────────────────────────
+    const MUSIC_CONTEXT = `You are MusicIQ, a helpful music data assistant. 
+    You help users understand audio features like danceability, energy, valence, tempo, 
+    acousticness, and how they relate to song popularity. Keep answers short and friendly.`;
+
+    async function sendChat() {
+      const input = document.getElementById("chatInput");
+      const msg   = input.value.trim();
+      if (!msg) return;
+
+      const messages = document.getElementById("chatMessages");
+
+      // Add user bubble
+      messages.innerHTML += `<div class="chat-bubble user">${msg}</div>`;
+      input.value = "";
+      messages.scrollTop = messages.scrollHeight;
+
+      // Add typing indicator
+      const typingId = Date.now();
+      messages.innerHTML += `<div class="chat-bubble bot" id="typing-${typingId}">...</div>`;
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const res = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 1000,
+            system: MUSIC_CONTEXT,
+            messages: [{ role: "user", content: msg }]
+          })
+        });
+        const data  = await res.json();
+        const reply = data.content?.[0]?.text || "Sorry, I couldn't get a response.";
+        document.getElementById(`typing-${typingId}`).textContent = reply;
+      } catch {
+        document.getElementById(`typing-${typingId}`).textContent =
+          "I'm having trouble connecting right now. Try asking again!";
+      }
+
+      messages.scrollTop = messages.scrollHeight;
+    }
+  </script>
+</body>
+</html>
